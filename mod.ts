@@ -67,7 +67,7 @@ export type SassOptions = {
  * *‍/
  * ```
  */
-export async function useDartSass(options: DartSassOptions = {}) {
+export async function useDartSass(options?: DartSassOptions) {
 	const textEncoder = new TextEncoder();
 	const textDecoder = new TextDecoder();
 	const { os, arch } = Deno.build;
