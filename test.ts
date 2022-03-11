@@ -1,8 +1,11 @@
+// TODO(Mark): Test useDartSass function
+
 import { assertEquals } from "https://deno.land/std@0.129.0/testing/asserts.ts";
 import { useDartSass } from "./mod.ts";
 
+const dartSass = await useDartSass();
+
 Deno.test("compileFromStringToString", async () => {
-	const dartSass = await useDartSass({ version: "latest" });
 	const css = await dartSass.compileFromStringToString(`$zero: 0;
 body {
 	margin: $zero;
@@ -15,7 +18,6 @@ body {
 });
 
 Deno.test("compileFromFileToString", async () => {
-	const dartSass = await useDartSass({ version: "1.49.9" });
 	const css = await dartSass.compileFromFileToString("test.scss");
 	assertEquals(css, `body {
   margin: 0;
@@ -24,14 +26,12 @@ Deno.test("compileFromFileToString", async () => {
 });
 
 Deno.test("compileFromFileToString style:compressed", async () => {
-	const dartSass = await useDartSass({ version: "1.49.9" });
 	const css = await dartSass.compileFromFileToString("test.scss", { style: "compressed" });
 	assertEquals(css, `body{margin:0}
 `);
 });
 
 Deno.test("compileFromFileToFile", async () => {
-	const dartSass = await useDartSass({ version: "1.49.9" });
 	await dartSass.compileFromFileToFile("test.scss", "test.css");
 	try {
 		const css = await Deno.readTextFile("test.css");
@@ -50,7 +50,6 @@ Deno.test("compileFromFileToFile", async () => {
 });
 
 Deno.test("compileFromFileToFile noSourceMap:true", async () => {
-	const dartSass = await useDartSass({ version: "1.49.9" });
 	await dartSass.compileFromFileToFile("test.scss", "test.css", { noSourceMap: true });
 	try {
 		const css = await Deno.readTextFile("test.css");
@@ -64,7 +63,6 @@ Deno.test("compileFromFileToFile noSourceMap:true", async () => {
 });
 
 Deno.test("compileFromFilesToFiles", async () => {
-	const dartSass = await useDartSass({ version: "1.49.9" });
 	await dartSass.compileFromFilesToFiles([{ inputFile: "test.scss", outputFile: "test.css" }]);
 	try {
 		const css = await Deno.readTextFile("test.css");
