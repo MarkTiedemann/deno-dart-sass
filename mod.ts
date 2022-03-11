@@ -12,7 +12,7 @@ export interface DartSassOptions {
 	/** The directory that the dart executable and the sass snapshot are located in. Defaults to the current working directory. */
 	fromDirectory?: string;
 
-	/** The name of the dart executable. to Defaults to "dart.exe" on Windows, "dart" on MacOS and Linux. */
+	/** The name of the dart executable. Defaults to "dart.exe" on Windows, "dart" on MacOS and Linux. */
 	dartExecutableName?: string;
 
 	/** The name of the sass snapshot. Defaults to "sass.snapshot". */
