@@ -13,7 +13,7 @@ This module provides:
 ```typescript
 import { useDartSass } from "https://raw.githubusercontent.com/MarkTiedemann/deno-dart-sass/master/mod.ts";
 
-const dartSass = await useDartSass({ version: "1.49.9" });
+const dartSass = await useDartSass();
 
 const scss = `
 $zero: 0;

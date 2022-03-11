@@ -2,7 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.129.0/testing/asserts.ts";
 import { useDartSass } from "./mod.ts";
 
 Deno.test("compileFromStringToString", async () => {
-	const dartSass = await useDartSass({ version: "1.49.9" });
+	const dartSass = await useDartSass({ version: "latest" });
 	const css = await dartSass.compileFromStringToString(`$zero: 0;
 body {
 	margin: $zero;

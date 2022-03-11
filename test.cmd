@@ -1,1 +1,1 @@
-@deno test --allow-run=.\dart.exe --allow-read --allow-write test.ts
+@deno test -A test.ts
