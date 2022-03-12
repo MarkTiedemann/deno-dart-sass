@@ -12,7 +12,7 @@ This module provides:
 ## Quickstart
 
 ```typescript
-import { useDartSass } from "https://raw.githubusercontent.com/MarkTiedemann/deno-dart-sass/master/mod.ts";
+import { useDartSass } from "https://raw.githubusercontent.com/MarkTiedemann/deno-dart-sass/0.1.0/mod.ts";
 
 const dartSass = await useDartSass();
 
