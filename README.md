@@ -6,7 +6,8 @@ This module provides:
 
 - A Deno module for downloading and using [dart-sass](https://github.com/sass/dart-sass)
 - A TypeScript interface for the [`sass` CLI](https://sass-lang.com/documentation/cli/dart-sass)
-- A number of [integration tests](test.ts)
+- Fully documented types, specifically [`DartSassOptions`](./mod.ts#L1-L21), [`DartSass`](./mod.ts#L23-L37), and [`SassOptions`](./mod.ts#L39-L93)
+- A number of [integration tests](./test.ts)
 
 ## Quickstart
 
@@ -30,19 +31,6 @@ body {
 }
 */
 ```
-
-## API
-
-`DartSass` exports four functions for compiling SCSS to CSS, which differ in their in- and outputs:
-
-```typescript
-function compileFromStringToString(inputString: string, options?: SassOptions)
-function compileFromFileToString(inputFile: string, options?: SassOptions)
-function compileFromFileToFile(inputFile: string, outputFile: string, options?: SassOptions)
-function compileFromFilesToFiles(files: { inputFile: string, outputFile: string }[], options?: SassOptions)
-```
-
-The `SassOptions` interface mimics the [options of the `sass` CLI](https://sass-lang.com/documentation/cli/dart-sass).
 
 ## License
 

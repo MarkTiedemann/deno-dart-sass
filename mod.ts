@@ -1,9 +1,7 @@
-// TODO(Mark): Document SassOptions and returned functions
-
-/** Options for using dart-sass. */
+/** Options for downloading and using [dart-sass](https://github.com/sass/dart-sass). */
 export interface DartSassOptions {
 
-	/** The dart-sass version to be used, e.g. "1.49.9". Defaults to "latest". */
+	/** The dart-sass version to be used, e.g. "1.49.9". Defaults to ["latest"](https://github.com/sass/dart-sass/releases/latest). */
 	version?: "latest" | string;
 
 	/** The "<‍operating-system>-<‍architecture>" tuple to be used. Defaults to the current operating system and architecture. */
@@ -18,35 +16,84 @@ export interface DartSassOptions {
 	/** The name of the sass snapshot. Defaults to "sass.snapshot". */
 	sassSnapshotName?: string;
 
-	/** Fail if either the dart executable or the sass snapshot are missing, instead of attempting to download the missing files from GitHub. */
+	/** Fail if either the dart executable or the sass snapshot are missing instead of attempting to download the missing files from GitHub. */
 	failIfMissing?: true;
 }
 
+/** Interface for the [dart-sass](https://github.com/sass/dart-sass) compiler. */
+export interface DartSass {
+
+	/** Compiles the specified SCSS input string. Returns the CSS output string. */
+	compileFromStringToString: (inputString: string, options?: SassOptions) => Promise<string>;
+
+	/** Compiles the specified SCSS input file. Returns the CSS output string. */
+	compileFromFileToString: (inputFile: string, options?: SassOptions) => Promise<string>;
+
+	/** Compiles the specified SCSS input file and writes the result to the specified CSS output file. */
+	compileFromFileToFile: (inputFile: string, outputFile: string, options?: SassOptions) => Promise<void>;
+
+	/** Compiles the specified SCSS input files and writes the results to the respective CSS output files. */
+	compileFromFilesToFiles: (files: { inputFile: string, outputFile: string }[], options?: SassOptions) => Promise<void>;
+}
+
+/** Options for the [`sass` CLI](https://sass-lang.com/documentation/cli/dart-sass). */
 export type SassOptions = {
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#load-path */
 	loadPath?: string | string[];
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#style */
 	style?: "expanded" | "compressed";
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#no-charset */
 	charset?: boolean;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#error-css */
 	errorCss?: boolean;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#update */
 	update?: true;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#stop-on-error */
 	stopOnError?: true;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#color */
 	color?: boolean;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#no-unicode */
 	unicode?: boolean;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#quiet */
 	quiet?: true;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#quiet-deps */
 	quietDeps?: true;
+
 } & ({
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#no-source-map */
 	noSourceMap: true;
+
 	sourceMapUrls?: undefined;
 	embedSources?: undefined;
 	embedSourceMap?: undefined;
+
 } | {
+
 	noSourceMap?: undefined;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#source-map-urls */
 	sourceMapUrls?: "relative" | "absolute";
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#embed-sources */
 	embedSources?: true;
+
+	/** @see https://sass-lang.com/documentation/cli/dart-sass#embed-source-map */
 	embedSourceMap?: true;
 });
 
 /**
- * Use the specified dart-sass executable. If if does not exist, download it from GitHub.
+ * Use the specified [dart-sass](https://github.com/sass/dart-sass) executable. If if does not exist, download it from GitHub.
  * 
  * ```typescript
  * const dartSass = await useDartSass();
@@ -67,7 +114,7 @@ export type SassOptions = {
  * *‍/
  * ```
  */
-export async function useDartSass(options?: DartSassOptions) {
+export async function useDartSass(options?: DartSassOptions): Promise<DartSass> {
 	const textEncoder = new TextEncoder();
 	const textDecoder = new TextDecoder();
 	const { os, arch } = Deno.build;
@@ -130,8 +177,8 @@ export async function useDartSass(options?: DartSassOptions) {
 			if (arch == "x86_64") {
 				switch (os) {
 					case "windows": target = "windows-x64"; break;
-					case "darwin": target = "macos-x64"; break;
-					case "linux": target = "linux-x64"; break;
+					case "darwin":  target = "macos-x64";   break;
+					case "linux":   target = "linux-x64";   break;
 					default: throw new Error(`unsupported operating system: '${os}'`);
 				}
 			} else {
@@ -230,7 +277,7 @@ export async function useDartSass(options?: DartSassOptions) {
 
 	async function unzipFiles() {
 		const tar = os === "windows" ? "tar.exe" : "tar";
-		await processStderr([tar, "xf", zipFile, "-C", fromDirectory!]);
+		await processStderr([tar, "xf", zipFile, "-C", fromDirectory]);
 	}
 
 	async function renameFiles() {
@@ -263,7 +310,7 @@ export async function useDartSass(options?: DartSassOptions) {
 		const url = `https://github.com/sass/dart-sass/releases/download/${version}/dart-sass-${version}-${target}.zip`;
 		const res = await fetch(url);
 		if (!res.ok) {
-			throw new Error(res.statusText);
+			throw new Error(`unable to download dart-sass from GitHub (URL: '${url}', HTTP status: ${res.status})`);
 		}
 		const data = new Uint8Array(await res.arrayBuffer());
 		await Deno.writeFile(zipFile, data);
@@ -292,7 +339,7 @@ export async function useDartSass(options?: DartSassOptions) {
 			if (status.success) {
 				return textDecoder.decode(stdout);
 			} else {
-				throw new Error(textDecoder.decode(stderr))
+				throw new Error(textDecoder.decode(stderr));
 			}
 		} finally {
 			process.close();
@@ -310,7 +357,7 @@ export async function useDartSass(options?: DartSassOptions) {
 			if (status.success) {
 				return textDecoder.decode(stdout);
 			} else {
-				throw new Error(textDecoder.decode(stderr))
+				throw new Error(textDecoder.decode(stderr));
 			}
 		} finally {
 			process.close();
@@ -325,7 +372,7 @@ export async function useDartSass(options?: DartSassOptions) {
 				process.stderrOutput()
 			]);
 			if (!status.success) {
-				throw new Error(textDecoder.decode(stderr))
+				throw new Error(textDecoder.decode(stderr));
 			}
 		} finally {
 			process.close();
@@ -337,5 +384,5 @@ export async function useDartSass(options?: DartSassOptions) {
 		compileFromFileToString,
 		compileFromFileToFile,
 		compileFromFilesToFiles
-	}
+	};
 }
