@@ -1,11 +1,11 @@
 /** Options for downloading and using [dart-sass](https://github.com/sass/dart-sass). */
 export interface DartSassOptions {
 
-	/** The dart-sass version to be used, e.g. "1.49.9". Defaults to ["latest"](https://github.com/sass/dart-sass/releases/latest). */
+	/** The dart-sass version to be used, e.g. "1.51.0". Defaults to ["latest"](https://github.com/sass/dart-sass/releases/latest). */
 	version?: "latest" | string;
 
 	/** The "<‍operating-system>-<‍architecture>" tuple to be used. Defaults to the current operating system and architecture. */
-	target?: "linux-x64" | "macos-x64" | "windows-x64";
+	target?: "linux-x64" | "macos-x64" | "macos-arm64" | "windows-x64";
 
 	/** The directory that the dart executable and the sass snapshot are located in. Defaults to the current working directory. */
 	fromDirectory?: string;
@@ -174,12 +174,46 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 			version = "latest";
 		}
 		if (target === undefined) {
-			if (arch == "x86_64") {
-				switch (os) {
-					case "windows": target = "windows-x64"; break;
-					case "darwin":  target = "macos-x64";   break;
-					case "linux":   target = "linux-x64";   break;
-					default: throw new Error(`unsupported operating system: '${os}'`);
+			if (arch === "x86_64") {
+				if (os === "windows") {
+					target = "windows-x64";
+				} else if (os === "darwin") {
+					target = "macos-x64";
+				} else if (os === "linux") {
+					target = "linux-x64";
+				} else {
+					throw new Error(`unsupported operating system: '${os}'`);
+				}
+			} else if (arch === "aarch64") {
+				if (os === "darwin") {
+					if (version === "latest") {
+						target = "macos-arm64";
+					} else {
+						let [major, minor, patch] = version.split(".").map(v => parseInt(v));
+						// 1.49.11 is the first ARM64 version
+						function supportsARM64() {
+							if (major > 1) {
+								return true;
+							} else if (major === 1) {
+								if (minor > 49) {
+									return true;
+								} else if (minor === 49) {
+									return patch >= 11;
+								} else {
+									return false;
+								}
+							} else {
+								return false;
+							}
+						}
+						if (supportsARM64()) {
+							target = "macos-arm64";
+						} else {
+							throw new Error(`unsupported architecture: '${arch}'`);
+						}
+					}
+				} else {
+					throw new Error(`unsupported operating system: '${os}'`);
 				}
 			} else {
 				throw new Error(`unsupported architecture: '${arch}'`);
@@ -307,7 +341,8 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 			const location = res.headers.get("location")!;
 			version = location.match(/^.*\/(.*)$/)![1];
 		}
-		const url = `https://github.com/sass/dart-sass/releases/download/${version}/dart-sass-${version}-${target}.zip`;
+		const extension = os === "windows" ? ".zip" : ".tar.gz";
+		const url = `https://github.com/sass/dart-sass/releases/download/${version}/dart-sass-${version}-${target}${extension}`;
 		const res = await fetch(url);
 		if (!res.ok) {
 			throw new Error(`unable to download dart-sass from GitHub (URL: '${url}', HTTP status: ${res.status})`);

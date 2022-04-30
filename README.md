@@ -8,11 +8,12 @@ This module provides:
 - A TypeScript interface for the [`sass` CLI](https://sass-lang.com/documentation/cli/dart-sass)
 - Fully documented types, specifically [`DartSassOptions`](./mod.ts#L1-L21), [`DartSass`](./mod.ts#L23-L37), and [`SassOptions`](./mod.ts#L39-L93)
 - A number of [integration tests](./test.ts)
+- No dependencies
 
 ## Quickstart
 
 ```typescript
-import { useDartSass } from "https://raw.githubusercontent.com/MarkTiedemann/deno-dart-sass/0.1.0/mod.ts";
+import { useDartSass } from "https://raw.githubusercontent.com/MarkTiedemann/deno-dart-sass/0.2.0/mod.ts";
 
 const dartSass = await useDartSass();
 
@@ -31,6 +32,11 @@ body {
 }
 */
 ```
+
+## Changelog
+
+- `0.1.0`: Initial release (Mar 12, 2022)
+- `0.2.0`: Support ARM64 on MacOS (Apr 30, 2022)
 
 ## License
 
