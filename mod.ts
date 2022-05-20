@@ -7,14 +7,17 @@ export interface DartSassOptions {
 	/** The "<‍operating-system>-<‍architecture>" tuple to be used. Defaults to the current operating system and architecture. */
 	target?: "linux-x64" | "macos-x64" | "macos-arm64" | "windows-x64";
 
-	/** The directory that the dart executable and the sass snapshot are located in. Defaults to the current working directory. */
+	/** The directory that the dart executable, the sass snapshot or the sass executable are located in. Defaults to the current working directory. */
 	fromDirectory?: string;
 
-	/** The name of the dart executable. Defaults to "dart.exe" on Windows, "dart" on MacOS and Linux. */
+	/** The name of the dart executable. Defaults to "dart.exe" on Windows, "dart" on MacOS. */
 	dartExecutableName?: string;
 
-	/** The name of the sass snapshot. Defaults to "sass.snapshot". */
+	/** The name of the sass snapshot. Defaults to "sass.snapshot" on Windows and MacOS. */
 	sassSnapshotName?: string;
+
+	/** The name of the sass executable. Defaults to "sass" on Linux. */
+	sassExecutableName?: string;
 
 	/** Fail if either the dart executable or the sass snapshot are missing instead of attempting to download the missing files from GitHub. */
 	failIfMissing?: true;
@@ -118,22 +121,32 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 	const textEncoder = new TextEncoder();
 	const textDecoder = new TextDecoder();
 	const { os, arch } = Deno.build;
-	const pathSeparator =  os === "windows" ? "\\" : "/";
+	const pathSeparator = os === "windows" ? "\\" : "/";
 
-	let { version, target, fromDirectory, dartExecutableName, sassSnapshotName, failIfMissing } = applyDefaultOptions(options);
+	let { version, target, fromDirectory, dartExecutableName, sassSnapshotName, sassExecutableName, failIfMissing } = applyDefaultOptions(options);
 
 	const dartExecutable = fromDirectory + pathSeparator + dartExecutableName;
 	const sassSnapshot = fromDirectory + pathSeparator + sassSnapshotName;
-	const zipFile = fromDirectory + pathSeparator + "dart-sass.zip";
+	const sassExecutable = fromDirectory + pathSeparator + sassExecutableName;
+	const extension = os === "windows" ? ".zip" : ".tar.gz";
+	const zipFile = fromDirectory + pathSeparator + "dart-sass" + extension;
 
 	try {
-		await Promise.all([
-			Deno.stat(dartExecutable),
-			Deno.stat(sassSnapshot)
-		]);
+		if (os === "linux") {
+			await Deno.stat(sassExecutable);
+		} else {
+			await Promise.all([
+				Deno.stat(dartExecutable),
+				Deno.stat(sassSnapshot)
+			]);
+		}
 	} catch {
 		if (failIfMissing) {
-			throw new Error(`missing '${dartExecutableName}' (${dartExecutable}) and '${sassSnapshotName}' (${sassSnapshot})`);
+			if (os === "linux") {
+				throw new Error(`missing '${sassExecutableName}' (${sassExecutable})`);
+			} else {
+				throw new Error(`missing '${dartExecutableName}' (${dartExecutable}) and '${sassSnapshotName}' (${sassSnapshot})`);
+			}
 		}
 		await Deno.mkdir(fromDirectory, { recursive: true });
 		await fetchZipFile();
@@ -169,7 +182,7 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 	}
 
 	function applyDefaultOptions(options: DartSassOptions = {}) {
-		let { version, target, fromDirectory, dartExecutableName, sassSnapshotName, failIfMissing } = options;
+		let { version, target, fromDirectory, dartExecutableName, sassSnapshotName, sassExecutableName, failIfMissing } = options;
 		if (version === undefined) {
 			version = "latest";
 		}
@@ -225,18 +238,25 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 		if (dartExecutableName === undefined) {
 			if (os === "windows") {
 				dartExecutableName = "dart.exe";
-			} else {
+			} else if (os === "darwin") {
 				dartExecutableName = "dart";
 			}
 		}
 		if (sassSnapshotName === undefined) {
-			sassSnapshotName = "sass.snapshot";
+			if (os !== "linux") {
+				sassSnapshotName = "sass.snapshot";
+			}
 		}
-		return { version, target, fromDirectory, dartExecutableName, sassSnapshotName, failIfMissing };
+		if (sassExecutableName === undefined) {
+			if (os === "linux") {
+				sassExecutableName = "sass";
+			}
+		}
+		return { version, target, fromDirectory, dartExecutableName, sassSnapshotName, sassExecutableName, failIfMissing };
 	}
 
 	function createCommand(options?: SassOptions) {
-		const command = [dartExecutable, sassSnapshot];
+		const command = os === "linux" ? [sassExecutable] : [dartExecutable, sassSnapshot];
 		if (options === undefined) {
 			return command;
 		}
@@ -320,11 +340,13 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 				Deno.rename(fromDirectory + "\\dart-sass\\src\\dart.exe", dartExecutable),
 				Deno.rename(fromDirectory + "\\dart-sass\\src\\sass.snapshot", sassSnapshot)
 			]);
-		} else {
+		} else if (os === "darwin") {
 			await Promise.all([
 				Deno.rename(fromDirectory + "/dart-sass/src/dart", dartExecutable),
 				Deno.rename(fromDirectory + "/dart-sass/src/sass.snapshot", sassSnapshot)
 			]);
+		} else {
+			await Deno.rename(fromDirectory + "/dart-sass/sass", sassExecutable);
 		}
 	}
 
@@ -341,7 +363,6 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 			const location = res.headers.get("location")!;
 			version = location.match(/^.*\/(.*)$/)![1];
 		}
-		const extension = os === "windows" ? ".zip" : ".tar.gz";
 		const url = `https://github.com/sass/dart-sass/releases/download/${version}/dart-sass-${version}-${target}${extension}`;
 		const res = await fetch(url);
 		if (!res.ok) {

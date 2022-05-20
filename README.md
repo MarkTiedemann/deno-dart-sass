@@ -13,7 +13,7 @@ This module provides:
 ## Quickstart
 
 ```typescript
-import { useDartSass } from "https://raw.githubusercontent.com/MarkTiedemann/deno-dart-sass/0.2.0/mod.ts";
+import { useDartSass } from "https://raw.githubusercontent.com/MarkTiedemann/deno-dart-sass/0.3.0/mod.ts";
 
 const dartSass = await useDartSass();
 
@@ -37,6 +37,7 @@ body {
 
 - `0.1.0`: Initial release (Mar 12, 2022)
 - `0.2.0`: Support ARM64 on MacOS (Apr 30, 2022)
+- `0.3.0`: Support sass executable on Linux (May 20, 2022)
 
 ## License
 
