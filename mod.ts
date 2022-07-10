@@ -202,9 +202,9 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 					if (version === "latest") {
 						target = "macos-arm64";
 					} else {
-						let [major, minor, patch] = version.split(".").map(v => parseInt(v));
+						const [major, minor, patch] = version.split(".").map(v => parseInt(v));
 						// 1.49.11 is the first ARM64 version
-						function supportsARM64() {
+						const supportsARM64 = () => {
 							if (major > 1) {
 								return true;
 							} else if (major === 1) {
@@ -218,7 +218,7 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 							} else {
 								return false;
 							}
-						}
+						};
 						if (supportsARM64()) {
 							target = "macos-arm64";
 						} else {
@@ -376,7 +376,7 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 		const process = Deno.run({ cmd, stdin: "piped", stdout: "piped", stderr: "piped" });
 		try {
 			const stdinBuf = textEncoder.encode(stdin);
-			async function writeToStdin() {
+			const writeToStdin = async () => {
 				try {
 					const written = await process.stdin.write(stdinBuf);
 					if (written !== stdinBuf.byteLength) {
@@ -385,7 +385,7 @@ export async function useDartSass(options?: DartSassOptions): Promise<DartSass> 
 				} finally {
 					process.stdin.close();
 				}
-			}
+			};
 			const [status, stdout, stderr] = await Promise.all([
 				process.status(),
 				process.output(),

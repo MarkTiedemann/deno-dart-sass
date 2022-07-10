@@ -6,7 +6,7 @@ This module provides:
 
 - A Deno module for downloading and using [dart-sass](https://github.com/sass/dart-sass)
 - A TypeScript interface for the [`sass` CLI](https://sass-lang.com/documentation/cli/dart-sass)
-- Fully documented types, specifically [`DartSassOptions`](./mod.ts#L1-L21), [`DartSass`](./mod.ts#L23-L37), and [`SassOptions`](./mod.ts#L39-L93)
+- Fully documented types, specifically [`DartSassOptions`](./mod.ts#L1-L24), [`DartSass`](./mod.ts#L26-L40), and [`SassOptions`](./mod.ts#L42-L96)
 - A number of [integration tests](./test.ts)
 - No dependencies
 
